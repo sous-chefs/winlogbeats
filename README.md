@@ -1,4 +1,4 @@
-# chef-winlogbeats
+# winlogbeats
 WinLogBeats
 
 This cookbook:
