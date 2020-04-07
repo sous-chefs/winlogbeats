@@ -1,7 +1,7 @@
-# Cookbook Name:: winlogbeats
+# Cookbook:: winlogbeats
 # Resource:: logbeats_agent
 #
-# Copyright (C) 2016 Dan Webb
+# Copyright:: (C) 2016 Dan Webb
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource_name :winlogbeats_agent
 property :version, String, name_property: true
 property :installer_url, String, default: lazy { "https://artifacts.elastic.co/downloads/beats/winlogbeat/#{long_version}.zip" }
 property :logbeat_owner, String, default: lazy { 'Administrator' }
@@ -26,7 +25,7 @@ property :long_version, String, default: lazy { 'winlogbeat-5.0.0-windows-x86_64
 default_action :install
 
 action :install do
-  windows_zipfile 'C:/ProgramData/winlogbeat' do
+  archive 'C:/ProgramData/winlogbeat' do
     source installer_url
     action :unzip
     not_if { ::File.exist?("C:/ProgramData/winlogbeat/#{long_version}") }
@@ -48,7 +47,6 @@ New-Service -name winlogbeat `
   -displayName winlogbeat `
   -binaryPathName "`"C:\\ProgramData\\winlogbeat\\#{long_version}\\winlogbeat.exe`" -c `"#{logbeat_config}`""
 EOH
-    guard_interpreter :powershell_script
     not_if 'Get-Service winlogbeat'
   end
 
