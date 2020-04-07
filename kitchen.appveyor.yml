@@ -1,3 +1,4 @@
+---
 driver:
   name: proxy
   host: localhost
@@ -11,9 +12,6 @@ provisioner:
 
 platforms:
   - name: windows-2012R2
-
-verifier:
-  name: inspec
 
 suites:
   - name: default
