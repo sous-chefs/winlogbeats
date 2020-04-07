@@ -1,6 +1,5 @@
 # agent
 
-
 ## Properties
 
 | Name          | Type   | Default                                                                       | Description                                                                  | Allowed Values |
@@ -10,7 +9,6 @@
 | group         | String | 'Administrators                                                               | Group for the winlogbeat directory                                           |                |
 | config_file   | String | C:/ProgramData/winlogbeat/winlogbeat.yml                                      | Location of the yaml config file                                             |                |
 | long_version  | String | winlogbeat-7.6.2-windows-x86_64                                               | long versio number for the zip file. Change to update the downloaded version |                |
-
 
 ## Example
 
