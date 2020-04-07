@@ -16,15 +16,15 @@
 # limitations under the License.
 
 property :installer_url, String, default: lazy { "https://artifacts.elastic.co/downloads/beats/winlogbeat/#{long_version}.zip" },
-  description: 'URL to download the winlogbeat zip from'
+                                 description: 'URL to download the winlogbeat zip from'
 property :owner, String, default: 'Administrator',
-  description: 'Owner of the winlogbeat directory'
+                         description: 'Owner of the winlogbeat directory'
 property :group, String, default: 'Administrators',
-  description: 'Group for the winlogbeat directory'
+                         description: 'Group for the winlogbeat directory'
 property :config_file, String, default: 'C:/ProgramData/winlogbeat/winlogbeat.yml',
-  description: 'Location of the yaml config file'
+                               description: 'Location of the yaml config file'
 property :long_version, String, default: 'winlogbeat-7.6.2-windows-x86_64',
-  description: 'long versio number for the zip file. Change to update the downloaded version'
+                                description: 'long versio number for the zip file. Change to update the downloaded version'
 
 action :install do
   remote_file "#{Chef::Config[:file_cache_path]}/#{new_resource.long_version}.zip" do
