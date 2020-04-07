@@ -1,9 +1,3 @@
-directory 'C:/ProgramData/winlogbeat' do
-  owner 'Administrator'
-  group 'Administrators'
-  recursive true
-end
-
 cookbook_file 'C:/ProgramData/winlogbeat/winlogbeat.yml' do
   source 'filebeats.yml'
   owner 'Administrator'
@@ -15,3 +9,13 @@ end
 winlogbeats_agent '5' do
   service_enabled true
 end
+
+# directory 'C:/ProgramData/winlogbeat' do
+#   owner 'Administrator'
+#   group 'Administrators'
+#   recursive true
+# enddirectory 'C:/ProgramData/winlogbeat' do
+#   owner 'Administrator'
+#   group 'Administrators'
+#   recursive true
+# end
