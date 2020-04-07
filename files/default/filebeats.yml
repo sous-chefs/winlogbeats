@@ -1,3 +1,4 @@
+---
 winlogbeat.event_logs:
   - name: Application
     ignore_older: 60h
