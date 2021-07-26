@@ -6,9 +6,7 @@ cookbook_file 'C:/ProgramData/winlogbeat/winlogbeat.yml' do
   action :create
 end
 
-winlogbeats_agent '5' do
-  service_enabled true
-end
+winlogbeats_agent '7.13.4'
 
 # directory 'C:/ProgramData/winlogbeat' do
 #   owner 'Administrator'
