@@ -1,10 +1,15 @@
 ---
+driver:
+  name: vagrant
+  chef_version: <%= ENV['CHEF_VERSION'] || 'current' %>
+  env: [CHEF_LICENSE=accept]
+
 suites:
   - name: default
     run_list:
       - recipe[test::default]
 
 platforms:
-  - name: windows2019
+  - name: tas50/windows_2019
 
 verifier: inspec
