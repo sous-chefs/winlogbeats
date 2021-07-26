@@ -1,13 +1,15 @@
 ---
+driver:
+  name: vagrant
+  chef_version: <%= ENV['CHEF_VERSION'] || 'current' %>
+  env: [CHEF_LICENSE=accept]
+
 suites:
   - name: default
     run_list:
-      - recipe[winlogbeats_latest::default]
+      - recipe[test::default]
 
 platforms:
-  - name: windows2012r2
-    driver:
-      image_id: ami-55084526
-      instance_type: t2.medium
+  - name: tas50/windows_2019
 
 verifier: inspec
