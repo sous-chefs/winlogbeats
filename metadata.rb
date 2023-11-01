@@ -5,7 +5,7 @@ license 'Apache-2.0'
 description 'Installs Winlogbeat Agent '
 issues_url 'https://github.com/damacus/chef-winlogbeats/issues'
 source_url 'https://github.com/damacus/chef-winlogbeats'
-version '0.0.3'
+version '0.0.4'
 chef_version '>= 15.0'
 
 depends 'windows'
