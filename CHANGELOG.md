@@ -1,6 +1,6 @@
 # winlogbeats Changelog
 
-## Unreleased
+## 0.0.5 - *2024-05-06*
 
 ## 0.0.4 - *2023-11-01*
 
