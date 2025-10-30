@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+unified_mode true
+
 property :installer_url, String, default: lazy { "https://artifacts.elastic.co/downloads/beats/winlogbeat/#{long_version}.zip" },
                                  description: 'URL to download the winlogbeat zip from'
 property :owner, String, default: 'Administrator',
