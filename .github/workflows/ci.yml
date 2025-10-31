@@ -21,6 +21,8 @@ jobs:
   integration:
     needs: lint-unit
     runs-on: windows-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         os:
