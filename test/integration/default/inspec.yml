@@ -1,0 +1,9 @@
+name: winlogbeats-default
+title: Winlogbeat default
+maintainer: Sous Chefs
+copyright: Sous Chefs
+summary: Verify supported Winlogbeat service state
+license: Apache-2.0
+version: 1.0.0
+supports:
+  - platform-family: windows

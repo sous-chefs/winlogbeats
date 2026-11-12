@@ -1,39 +1,38 @@
 ---
 name: ci
-
-'on':
+"on":
   pull_request:
   push:
-    branches:
-      - main
-
+    branches: [main]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
 jobs:
-  delivery:
-    runs-on: ubuntu-latest
+  lint-unit:
+    uses: sous-chefs/.github/.github/workflows/lint-unit.yml@9.0.1
+    permissions:
+      actions: write
+      checks: write
+      pull-requests: write
+      statuses: write
+      issues: write
+  integration-windows:
+    needs: lint-unit
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      matrix:
+        suite: [default, remove]
+        platform: [windows-2022, windows-2025]
+      fail-fast: false
     steps:
       - name: Check out code
         uses: actions/checkout@v7
-      - name: Run Chef Delivery
-        uses: actionshub/chef-delivery@main
+      - name: Install Cinc Workstation
+        uses: sous-chefs/.github/.github/actions/install-workstation@9.0.1
+      - name: Test installed state and removal
         env:
           CHEF_LICENSE: accept-no-persist
-
-  yamllint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v7
-      - name: Run yaml Lint
-        uses: actionshub/yamllint@main
-
-  mdl:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v7
-      - name: Run Markdown Lint
-        uses: actionshub/markdownlint@main
+          KITCHEN_LOCAL_YAML: kitchen.exec.yml
+        run: |
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          chef exec kitchen test ${{ matrix.suite }}-windows-latest --destroy=always
