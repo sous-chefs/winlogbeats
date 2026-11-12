@@ -11,8 +11,8 @@ property :checksum, String, default: lazy {
 
   '48d0e5848a9d9acf48ed1071e68bbedb79d3e44fb9c387575bd4217008f65da9'
 }
-property :owner, String, default: 'Administrator'
-property :group, String, default: 'Administrators'
+property :owner, String, default: 'S-1-5-32-544'
+property :group, String, default: 'S-1-5-32-544'
 property :install_root, String, default: 'C:/Program Files/Winlogbeat'
 property :data_dir, String, default: 'C:/Program Files/Winlogbeat-Data'
 property :config_file, String, default: lazy { "#{install_root}/winlogbeat.yml" }

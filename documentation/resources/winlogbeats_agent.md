@@ -20,8 +20,8 @@ Install a verified Winlogbeat archive and configure its native Windows service.
 | `long_version` | String | `winlogbeat-9.5.6-windows-x86_64` | Retained archive name override. |
 | `installer_url` | String | Elastic artifacts URL for long_version | Archive source. |
 | `checksum` | String | Verified 9.5.6 SHA-256 | Required explicitly for other versions. |
-| `owner` | String | `Administrator` | Owner for managed directories and configuration. |
-| `group` | String | `Administrators` | Group for managed directories and configuration. |
+| `owner` | String | `S-1-5-32-544` | Built-in Administrators SID; owner for managed directories and configuration. |
+| `group` | String | `S-1-5-32-544` | Built-in Administrators SID; group for managed directories and configuration. |
 | `install_root` | String | `C:/Program Files/Winlogbeat` | Dedicated installation tree, including the versioned directory. |
 | `data_dir` | String | `C:/Program Files/Winlogbeat-Data` | Dedicated event state and logs directory. |
 | `config_file` | String | `<install_root>/winlogbeat.yml` | Configuration file passed to the service. |

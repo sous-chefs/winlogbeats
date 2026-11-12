@@ -26,6 +26,8 @@ describe 'winlogbeats_agent' do
   end
 
   it 'leaves configuration ownership and starting explicit by default' do
+    expect(chef_run).to create_directory('C:/Program Files/Winlogbeat')
+      .with(owner: 'S-1-5-32-544', group: 'S-1-5-32-544')
     expect(chef_run).not_to create_file('C:/Program Files/Winlogbeat/winlogbeat.yml')
     expect(chef_run).not_to start_windows_service('start winlogbeat')
     expect(chef_run.windows_service('winlogbeat').startup_type).to eq :manual

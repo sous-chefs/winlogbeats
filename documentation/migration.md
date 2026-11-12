@@ -29,6 +29,10 @@ service by default; supply configuration and set `service_enabled true` to
 enable and start it, or call `:start` explicitly. Configuration/archive changes
 restart the managed service when automatic startup is selected.
 
+Owner and group defaults use the built-in Administrators SID, which works on
+renamed and localised Windows installations without an account literally named
+Administrator. Explicit account names still work.
+
 Custom archive versions now require a checksum. The bundled obsolete example
 configuration is replaced by the `configuration` property or a wrapper-managed
 file. Removal deletes the service, owned binaries, archive and state; use
