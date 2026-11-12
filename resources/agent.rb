@@ -1,54 +1,150 @@
-# Cookbook:: winlogbeats
-# Resource:: logbeats_agent
-#
-# Copyright:: (C) 2016 Dan Webb
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# frozen_string_literal: true
 
-property :installer_url, String, default: lazy { "https://artifacts.elastic.co/downloads/beats/winlogbeat/#{long_version}.zip" },
-                                 description: 'URL to download the winlogbeat zip from'
-property :owner, String, default: 'Administrator',
-                         description: 'Owner of the winlogbeat directory'
-property :group, String, default: 'Administrators',
-                         description: 'Group for the winlogbeat directory'
-property :config_file, String, default: 'C:/ProgramData/winlogbeat/winlogbeat.yml',
-                               description: 'Location of the yaml config file'
-property :long_version, String, default: 'winlogbeat-7.6.2-windows-x86_64',
-                                description: 'long versio number for the zip file. Change to update the downloaded version'
+require 'pathname'
+
+unified_mode true
+provides :winlogbeats_agent
+
+property :version, String, default: '9.5.6'
+property :long_version, String, default: lazy { "winlogbeat-#{version}-windows-x86_64" }
+property :installer_url, String, default: lazy { "https://artifacts.elastic.co/downloads/beats/winlogbeat/#{long_version}.zip" }
+property :checksum, String, default: lazy {
+  raise ArgumentError, 'Set checksum when using another Winlogbeat version' unless long_version == 'winlogbeat-9.5.6-windows-x86_64'
+
+  '48d0e5848a9d9acf48ed1071e68bbedb79d3e44fb9c387575bd4217008f65da9'
+}
+property :owner, String, default: 'S-1-5-32-544'
+property :group, String, default: 'S-1-5-32-544'
+property :install_root, String, default: 'C:/Program Files/Winlogbeat'
+property :data_dir, String, default: 'C:/Program Files/Winlogbeat-Data'
+property :config_file, String, default: lazy { "#{install_root}/winlogbeat.yml" }
+property :configuration, Hash, sensitive: true
+property :service_enabled, [true, false], default: false
+property :keep_data, [true, false], default: false
 
 action :install do
-  remote_file "#{Chef::Config[:file_cache_path]}/#{new_resource.long_version}.zip" do
+  validate_owned_trees!
+  remote_file archive_path do
     source new_resource.installer_url
-    mode '644'
+    checksum new_resource.checksum
   end
 
-  directory 'C:/ProgramData/winlogbeat' do
-    owner new_resource.owner
-    group new_resource.group
-    recursive true
+  [new_resource.install_root, new_resource.data_dir, ::File.dirname(new_resource.config_file)].uniq.each do |path|
+    directory path do
+      owner new_resource.owner
+      group new_resource.group
+      recursive true
+    end
   end
 
-  archive_file "#{Chef::Config[:file_cache_path]}/#{new_resource.long_version}.zip" do
-    destination 'C:/ProgramData/winlogbeat'
-    not_if { ::File.exist?("C:/ProgramData/winlogbeat/#{new_resource.long_version}") }
-    notifies :restart, 'windows_service[winlogbeat]', :delayed
+  archive_file archive_path do
+    destination new_resource.install_root
+    overwrite true
+    not_if { ::File.exist?(executable_path) }
+    notifies :restart, 'windows_service[winlogbeat]', :delayed if new_resource.service_enabled
   end
 
-  install_path = "C:\\ProgramData\\winlogbeat\\#{new_resource.long_version}\\winlogbeat.exe"
+  if new_resource.configuration
+    file new_resource.config_file do
+      content YAML.dump(new_resource.configuration)
+      owner new_resource.owner
+      group new_resource.group
+      sensitive true
+      notifies :restart, 'windows_service[winlogbeat]', :delayed if new_resource.service_enabled
+    end
+  end
 
   windows_service 'winlogbeat' do
-    binary_path_name "`#{install_path}` -c `#{new_resource.config_file}`"
-    supports restart: true, reload: false, status: true, stop: true, start: true
-    action :create
+    binary_path_name service_command
+    startup_type new_resource.service_enabled ? :automatic : :manual
+    delayed_start new_resource.service_enabled
+    action [:create, :configure]
+    notifies :restart, 'windows_service[winlogbeat]', :delayed if new_resource.service_enabled
+  end
+
+  if new_resource.service_enabled
+    windows_service 'start winlogbeat' do
+      service_name 'winlogbeat'
+      action [:enable, :start]
+    end
+  end
+end
+
+action :start do
+  windows_service 'winlogbeat' do
+    action [:enable, :start]
+  end
+end
+
+action :stop do
+  windows_service 'winlogbeat' do
+    action :stop
+  end
+end
+
+action :remove do
+  validate_owned_trees!
+  windows_service 'winlogbeat' do
+    action [:stop, :delete]
+  end
+
+  file new_resource.config_file do
+    action :delete
+    only_if { new_resource.configuration }
+  end
+
+  directory new_resource.install_root do
+    recursive true
+    action :delete
+  end
+
+  unless new_resource.keep_data
+    directory new_resource.data_dir do
+      recursive true
+      action :delete
+    end
+  end
+
+  file archive_path do
+    action :delete
+  end
+end
+
+action_class do
+  def validate_owned_trees!
+    paths = [new_resource.install_root, new_resource.data_dir].map do |path|
+      normalised = path.tr('\\', '/').sub(%r{/+\z}, '').downcase
+      if normalised.match?(%r{\A[a-z]:/})
+        normalised = "#{normalised[0, 2]}#{::Pathname.new(normalised[2..]).cleanpath}"
+      end
+      if !normalised.match?(%r{\A[a-z]:/[^/]+}) || normalised.match?(%r{\A[a-z]:/(?:windows|program files(?: \(x86\))?|programdata|users)\z})
+        raise ArgumentError, 'install_root and data_dir must be dedicated local directories, not drive or system roots'
+      end
+      normalised
+    end
+    if new_resource.keep_data && (paths[1] == paths.first || paths[1].start_with?("#{paths.first}/"))
+      raise ArgumentError, 'keep_data requires data_dir outside install_root'
+    end
+  end
+
+  def archive_path
+    ::File.join(Chef::Config[:file_cache_path], "#{new_resource.long_version}.zip")
+  end
+
+  def executable_path
+    "#{new_resource.install_root}/#{new_resource.long_version}/winlogbeat.exe"
+  end
+
+  def quoted_path(path)
+    raise ArgumentError, 'Windows paths cannot contain quotes or newlines' if path.match?(/["\r\n]/)
+
+    "\"#{path.tr('/', '\\')}\""
+  end
+
+  def service_command
+    "#{quoted_path(executable_path)} --environment=windows_service -c #{quoted_path(new_resource.config_file)} " \
+      "--path.home #{quoted_path("#{new_resource.install_root}/#{new_resource.long_version}")} " \
+      "--path.data #{quoted_path(new_resource.data_dir)} --path.logs #{quoted_path("#{new_resource.data_dir}/logs")} " \
+      '-E logging.files.redirect_stderr=true'
   end
 end
