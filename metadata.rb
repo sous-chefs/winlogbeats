@@ -5,7 +5,7 @@ license 'Apache-2.0'
 description 'Installs Winlogbeat Agent '
 issues_url 'https://github.com/sous-chefs/winlogbeats/issues'
 source_url 'https://github.com/sous-chefs/winlogbeats'
-version '0.0.7'
+version '1.0.0'
 chef_version '>= 16.0'
 
 supports 'windows', '>= 10.0'
