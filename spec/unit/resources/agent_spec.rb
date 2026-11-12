@@ -104,4 +104,31 @@ describe 'winlogbeats_agent' do
       expect { chef_run }.to raise_error(ArgumentError, /Set checksum/)
     end
   end
+
+  context 'a protected removal root' do
+    recipe do
+      winlogbeats_agent 'agent' do
+        install_root 'C:/Program Files'
+        action :remove
+      end
+    end
+
+    it 'rejects a shared system root before removing anything' do
+      expect { chef_run }.to raise_error(ArgumentError, /dedicated local directories/)
+    end
+  end
+
+  context 'retained data inside the installation tree' do
+    recipe do
+      winlogbeats_agent 'agent' do
+        data_dir 'C:/Program Files/Winlogbeat/data'
+        keep_data true
+        action :remove
+      end
+    end
+
+    it 'rejects a retention request that recursive removal could not honour' do
+      expect { chef_run }.to raise_error(ArgumentError, /outside install_root/)
+    end
+  end
 end

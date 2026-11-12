@@ -48,3 +48,5 @@ end
 Use matching path properties on installation and removal. Do not point the
 installation or data properties at shared directories: removal owns those trees.
 Shared parents of an external configuration file are not removed.
+The resource rejects drive/system roots. With `keep_data true`, `data_dir` must
+be outside `install_root` so recursive binary removal cannot erase retained state.

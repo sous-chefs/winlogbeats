@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pathname'
+
 unified_mode true
 provides :winlogbeats_agent
 
@@ -21,6 +23,7 @@ property :service_enabled, [true, false], default: false
 property :keep_data, [true, false], default: false
 
 action :install do
+  validate_owned_trees!
   remote_file archive_path do
     source new_resource.installer_url
     checksum new_resource.checksum
@@ -79,6 +82,7 @@ action :stop do
 end
 
 action :remove do
+  validate_owned_trees!
   windows_service 'winlogbeat' do
     action [:stop, :delete]
   end
@@ -106,6 +110,22 @@ action :remove do
 end
 
 action_class do
+  def validate_owned_trees!
+    paths = [new_resource.install_root, new_resource.data_dir].map do |path|
+      normalised = path.tr('\\', '/').sub(%r{/+\z}, '').downcase
+      if normalised.match?(%r{\A[a-z]:/})
+        normalised = "#{normalised[0, 2]}#{::Pathname.new(normalised[2..]).cleanpath}"
+      end
+      if !normalised.match?(%r{\A[a-z]:/[^/]+}) || normalised.match?(%r{\A[a-z]:/(?:windows|program files(?: \(x86\))?|programdata|users)\z})
+        raise ArgumentError, 'install_root and data_dir must be dedicated local directories, not drive or system roots'
+      end
+      normalised
+    end
+    if new_resource.keep_data && (paths[1] == paths.first || paths[1].start_with?("#{paths.first}/"))
+      raise ArgumentError, 'keep_data requires data_dir outside install_root'
+    end
+  end
+
   def archive_path
     ::File.join(Chef::Config[:file_cache_path], "#{new_resource.long_version}.zip")
   end
