@@ -18,8 +18,8 @@ deployment through your secret store. The resource can also use a configuration
 file managed by your wrapper cookbook. Installation alone registers a manual
 service; set `service_enabled true` or use `:start` to run it.
 
-See the [resource reference](documentation/resources/winlogbeats_agent.md),
-[migration guide](documentation/migration.md) and [testing guide](TESTING.md).
+See the [resource reference](documentation/winlogbeats_agent.md),
+[migration guide](migration.md) and [testing guide](TESTING.md).
 
 ## Licence
 

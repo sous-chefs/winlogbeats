@@ -17,6 +17,9 @@ describe 'winlogbeats_agent' do
   end
 
   it 'extracts into Program Files and registers a properly quoted Windows service' do
+    archive = chef_run.resource_collection.select { |item| item.resource_name == :archive_file }.first
+    expect(archive.destination).to eq 'C:/Program Files/Winlogbeat'
+    expect(archive.overwrite).to be true
     expect(chef_run).to create_windows_service('winlogbeat')
     expect(chef_run).to configure_windows_service('winlogbeat')
     command = chef_run.windows_service('winlogbeat').binary_path_name

@@ -39,6 +39,7 @@ action :install do
 
   archive_file archive_path do
     destination new_resource.install_root
+    overwrite true
     not_if { ::File.exist?(executable_path) }
     notifies :restart, 'windows_service[winlogbeat]', :delayed if new_resource.service_enabled
   end
