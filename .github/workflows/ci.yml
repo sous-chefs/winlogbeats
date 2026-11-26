@@ -19,6 +19,8 @@ jobs:
   integration-windows:
     needs: lint-unit
     runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: read
     strategy:
       matrix:
         suite: [default, remove]
