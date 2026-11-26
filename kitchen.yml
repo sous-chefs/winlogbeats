@@ -1,13 +1,29 @@
 ---
+driver:
+  name: vagrant
+transport:
+  name: winrm
+  elevated: true
+provisioner:
+  name: chef_infra
+  policyfile_path: Policyfile.rb
+  chef_license: accept-no-persist
+  deprecations_as_errors: true
+verifier:
+  name: inspec
+platforms:
+  - name: windows-2019
+    driver_config:
+      box: tas50/windows_2019
+  - name: windows-2022
+    driver_config:
+      box: gusztavvargadr/windows-server-2022-standard
 suites:
   - name: default
-    run_list:
-      - recipe[winlogbeats_latest::default]
-
-platforms:
-  - name: windows2012r2
-    driver:
-      image_id: ami-55084526
-      instance_type: t2.medium
-
-verifier: inspec
+    provisioner:
+      named_run_list: default
+      multiple_converge: 2
+      enforce_idempotency: true
+  - name: remove
+    provisioner:
+      named_run_list: remove
